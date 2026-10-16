@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Калькулятор услуг — Центр полировки Detailing</title>
+  <style>
+    :root{--ink:#0f141c;--acc:#0284c7;--bg:#f4f6fa;--card:#fff;--mut:#5d6881;--line:#dfe5ef}
+    *{box-sizing:border-box}body{margin:0;font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    .wrap{max-width:560px;margin:0 auto;padding:16px 16px 40px}
+    .badge{display:inline-block;background:#e0f2fe;color:#0369a1;font-weight:700;font-size:12.5px;padding:5px 11px;border-radius:99px;margin-bottom:8px}
+    h1{font-size:25px;margin:0 0 4px}p.sub{color:var(--mut);margin:0 0 16px;font-size:14.5px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,.04)}
+    label.t{display:block;font-weight:700;margin:14px 0 6px}label.t:first-child{margin-top:0}
+    select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}
+    .ck{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+    .ck input{width:22px;height:22px;accent-color:var(--acc)}
+    .ck span{flex:1}.ck small{color:var(--mut);font-weight:600}
+    .total{background:var(--ink);color:#fff;border-radius:18px;padding:20px;margin-bottom:12px}
+    .total .sum{font-size:36px;font-weight:800;color:#38bdf8;margin:4px 0}
+    .line{display:flex;justify-content:space-between;font-size:14px;opacity:.9;padding:2px 0}
+    button.main{width:100%;padding:14px;border:0;border-radius:12px;background:var(--acc);color:#fff;font-weight:700;font-size:17px;cursor:pointer}
+    button.main:hover{background:#0369a1}
+    #box{white-space:pre-wrap;background:#eef2f8;border-radius:10px;padding:10px;font-size:13px;margin-top:10px;display:none}
+    input[type=text],input[type=tel]{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit;margin-top:6px}
+    .note{font-size:12px;color:var(--mut);margin-top:10px;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="badge">Центр полировки Detailing • Стерлитамак</span>
+    <h1>Калькулятор стоимости услуг</h1>
+    <p class="sub">Выберите класс вашего автомобиля и нужные защитные или восстановительные процедуры</p>
+
+    <div class="card">
+      <label class="t">Класс автомобиля</label>
+      <select id="carClass">
+        <option value="1">1 класс: Седан / Хэтчбек (малый)</option>
+        <option value="1.25" selected>2 класс: Кроссовер / Универсал / Седан D-класса</option>
+        <option value="1.5">3 класс: Большой внедорожник / Минивэн</option>
+      </select>
+
+      <label class="t">Основная услуга</label>
+      <select id="mainService">
+        <option value="6000">Лёгкая восстановительная полировка — от 6 000 ₽</option>
+        <option value="12000" selected>Глубокая многоэтажная полировка кузова — от 12 000 ₽</option>
+        <option value="18000">Глубокая полировка + Керамика в 2 слоя — от 18 000 ₽</option>
+      </select>
+
+      <div style="margin-top:14px">
+        <label class="ck"><input type="checkbox" id="d1" data-price="4500"><span>Полировка фар и бронирование плёнкой</span><small>+4 500 ₽</small></label>
+        <label class="ck"><input type="checkbox" id="d2" data-price="3500"><span>Твёрдый воск / Защитное покрытие</span><small>+3 500 ₽</small></label>
+        <label class="ck"><input type="checkbox" id="d3" data-price="5000"><span>Химчистка кожаного салона / сидений</span><small>+5 000 ₽</small></label>
+        <label class="ck"><input type="checkbox" id="d4" data-price="2500"><span>Антидождь на все стёкла</span><small>+2 500 ₽</small></label>
+      </div>
+    </div>
+
+    <div class="total">
+      <small style="opacity:.8">Ориентировочная стоимость:</small>
+      <div class="sum" id="sum">0 ₽</div>
+      <div id="lines"></div>
+      <div class="line" style="margin-top:10px; border-top:1px solid rgba(255,255,255,.15); padding-top:8px">
+        <span>Время работы:</span><b id="term">1–2 дня</b>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="t">Зафиксировать расчёт и записаться</label>
+      <input type="text" id="name" placeholder="Ваше имя">
+      <input type="tel" id="phone" placeholder="Ваш телефон (+7 ...)">
+      <button class="main" id="send" style="margin-top:12px">Отправить заявку в Telegram →</button>
+      <div id="box"></div>
+      <div class="note">Бесплатный осмотр ЛКП перед началом работ. Точная цена фиксируется при сдаче авто.</div>
+    </div>
+  </div>
+
+  <script>
+    const fmt = n => Math.round(n).toLocaleString("ru-RU") + " ₽";
+    const carClass = document.getElementById("carClass");
+    const mainService = document.getElementById("mainService");
+    const checks = [document.getElementById("d1"), document.getElementById("d2"), document.getElementById("d3"), document.getElementById("d4")];
+
+    function calc() {
+      const mult = +carClass.value;
+      let base = +mainService.value * mult;
+      const rows = [
+        [mainService.options[mainService.selectedIndex].text.split(" — ")[0], base]
+      ];
+
+      checks.forEach(c => {
+        if (c.checked) {
+          const p = +c.dataset.price;
+          base += p;
+          rows.push([c.nextElementSibling.textContent, p]);
+        }
+      });
+
+      document.getElementById("sum").textContent = fmt(base);
+      document.getElementById("lines").innerHTML = rows.map(r => `<div class="line"><span>${r[0]}</span><span>${fmt(r[1])}</span></div>`).join("");
+      document.getElementById("term.textContent") = base > 15000 ? "2–3 дня" : "1–2 дня";
+    }
+
+    [carClass, mainService, ...checks].forEach(el => el.onchange = calc);
+    calc();
+
+    document.getElementById("send").onclick = () => {
+      const n = document.getElementById("name").value.trim();
+      const p = document.getElementById("phone").value.trim();
+      if (n.length < 2 || p.replace(/\D/g, "").length < 10) {
+        alert("Пожалуйста, укажите имя и корректный номер телефона");
+        return;
+      }
+      const sumText = document.getElementById("sum").textContent;
+      const text = `Новая заявка с сайта (Центр полировки Detailing)\nИмя: ${n}\nТелефон: ${p}\nКласс авто: ${carClass.options[carClass.selectedIndex].text}\nИтоговая смета: ${sumText}`;
+      
+      // Здесь прописан твой Telegram для приёма заявок
+      window.open("https://t.me/spayfismm?text=" + encodeURIComponent(text), "_blank");
+    };
+  </script>
+</body>
+</html>
